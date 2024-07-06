@@ -1,6 +1,7 @@
 # app.py
 import sys
-from PySide6.QtCore import QCoreApplication
+import signal
+from PySide6.QtCore import QCoreApplication, QTimer
 from PySide6.QtWidgets import QApplication, QMainWindow
 from PySide6.QtWebEngineWidgets import QWebEngineView
 
@@ -17,13 +18,25 @@ class BrowserWindow(QMainWindow):
         
         self.setCentralWidget(self.browser)
 
+def signal_handler(signum, frame):
+    QCoreApplication.quit()
+
 def main():
     app = QApplication(sys.argv)
+    
+    # Set up signal handling
+    signal.signal(signal.SIGINT, signal_handler)
+    
     window = BrowserWindow()
     window.show()
     
     # Hide the window
     window.hide()
+    
+    # Create a timer to process Python events
+    timer = QTimer()
+    timer.start(100)  # Fire every 100ms
+    timer.timeout.connect(lambda: None)  # Let the interpreter run each 100ms
     
     sys.exit(app.exec())
 
