@@ -13,10 +13,35 @@
             height: 100%;
             overflow: hidden;
         }
+        #context-menu {
+            position: absolute;
+            display: none;
+            background-color: white;
+            border: 1px solid #ccc;
+            z-index: 1000;
+        }
+        #context-menu ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        #context-menu ul li {
+            padding: 8px 12px;
+            cursor: pointer;
+        }
+        #context-menu ul li:hover {
+            background-color: #eee;
+        }
     </style>
 </head>
 <body>
     <canvas id="canvas"></canvas>
+    <div id="context-menu">
+        <ul>
+            <li id="add-node">Add Node</li>
+            <li id="remove-node">Remove Node</li>
+        </ul>
+    </div>
 
     <script>
         var socket = new WebSocket('ws://localhost:8000');
@@ -85,6 +110,47 @@
 
         canvas.onmouseleave = function() {
             dragging = false;
+        };
+
+        canvas.oncontextmenu = function(e) {
+            e.preventDefault();
+            showContextMenu(e.clientX, e.clientY);
+        };
+
+        function showContextMenu(x, y) {
+            var menu = document.getElementById('context-menu');
+            menu.style.left = `${x}px`;
+            menu.style.top = `${y}px`;
+            menu.style.display = 'block';
+        }
+
+        function hideContextMenu() {
+            var menu = document.getElementById('context-menu');
+            menu.style.display = 'none';
+        }
+
+        document.getElementById('add-node').onclick = function() {
+            socket.send('add node');
+            hideContextMenu();
+        };
+
+        document.getElementById('remove-node').onclick = function() {
+            socket.send('remove node');
+            hideContextMenu();
+        };
+
+        window.onclick = function() {
+            hideContextMenu();
+        };
+
+        canvas.oncontextmenu = function(e) {
+            e.preventDefault();
+            var rect = canvas.getBoundingClientRect();
+            var x = e.clientX - rect.left;
+            var y = e.clientY - rect.top;
+
+            var isNode = offsetX >= squareX && offsetX <= squareX + squareSize && offsetY >= squareY && offsetY <= squareY + squareSize;
+            showContextMenu(e.clientX, e.clientY);
         };
     </script>
 </body>

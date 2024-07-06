@@ -1,8 +1,8 @@
 # MainWindow.py
 
-from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QHBoxLayout, QLabel, QComboBox, QDockWidget
+from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QHBoxLayout, QLabel, QComboBox, QDockWidget, QGraphicsScene
 from PySide6.QtCore import Qt
-from CustomGraphicsView import CanvasWidget
+from CustomGraphicsView import CustomGraphicsView, CanvasWidget
 from MapView import MapView
 
 class MainWindow(QMainWindow):
@@ -21,8 +21,10 @@ class MainWindow(QMainWindow):
 
         self.layout.addLayout(self.type_layout)
 
-        self.canvas = CanvasWidget()
-        self.layout.addWidget(self.canvas)
+        self.canvas_widget = CanvasWidget()
+        self.scene = QGraphicsScene()
+        self.graphics_view = CustomGraphicsView(self.scene, self)
+        self.layout.addWidget(self.graphics_view)
         self.setLayout(self.layout)
 
         self.create_dock_widgets()
