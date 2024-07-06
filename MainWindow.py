@@ -2,7 +2,8 @@
 
 from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QHBoxLayout, QLabel, QComboBox, QDockWidget, QGraphicsScene
 from PySide6.QtCore import Qt
-from CustomGraphicsView import CustomGraphicsView, CanvasWidget
+from CustomGraphicsView import CustomGraphicsView
+from CanvasWidget import CanvasWidget
 from MapView import MapView
 
 class MainWindow(QMainWindow):

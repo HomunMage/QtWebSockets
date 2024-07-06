@@ -5,7 +5,7 @@ import signal
 from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import QApplication
 from MainWindow import MainWindow
-from CustomGraphicsView import WebSocketServer
+from WebSocketServer import WebSocketServer
 
 def signal_handler(sig, frame):
     print("Interrupt received, shutting down...")
