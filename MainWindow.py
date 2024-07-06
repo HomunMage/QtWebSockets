@@ -1,3 +1,5 @@
+# MainWindow.py
+
 from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QHBoxLayout, QLabel, QComboBox, QDockWidget
 from PySide6.QtCore import Qt
 from CustomGraphicsView import CanvasWidget

@@ -1,3 +1,5 @@
+# server.py
+
 import sys
 import signal
 from PySide6.QtCore import QTimer

@@ -1,3 +1,5 @@
+# CustomGraphicsView.py
+
 from PySide6.QtWidgets import QWidget, QGraphicsView
 from PySide6.QtCore import QObject, QPointF, QTimer
 from PySide6.QtGui import QPainter, QColor
