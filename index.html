@@ -4,13 +4,19 @@
     <title>WebSocket Client</title>
     <style>
         canvas {
-            border: 1px solid black;
+            border: 2px solid black;
+        }
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
         }
     </style>
 </head>
 <body>
-    <h1>Qt Drawing</h1>
-    <canvas id="canvas" width="200" height="200"></canvas>
+    <canvas id="canvas"></canvas>
 
     <script>
         var socket = new WebSocket('ws://localhost:8000');
@@ -19,6 +25,15 @@
         var dragging = false;
         var offsetX, offsetY;
         var squareX = 50, squareY = 50, squareSize = 100;
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth - 4; // Subtract some pixels to avoid scrollbars
+            canvas.height = window.innerHeight - 4; // Subtract some pixels to avoid scrollbars
+            drawOnCanvas(squareX, squareY, squareSize, squareSize, "Start");
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        window.addEventListener('load', resizeCanvas);
 
         socket.onopen = function() {
             console.log('WebSocket connection opened');
