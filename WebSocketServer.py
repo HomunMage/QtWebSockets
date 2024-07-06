@@ -35,19 +35,18 @@ class WebSocketServer(QObject):
 
     def process_message(self, client, message):
         parts = message.split(' ')
-        if parts[0] == 'move':
-            x = int(parts[1])
-            y = int(parts[2])
-            self.widget.node.move(x, y)
-            self.widget.update()  # Update the widget immediately
-            self.send_drawing_command()  # Send the updated drawing command immediately
-        elif parts[0] == 'add':
+        command = parts[0]
+        if command == 'mousedown':
+            button = parts[1]
             x = int(parts[2])
             y = int(parts[3])
-            self.widget.node.move(x, y)
-            self.widget.update()
-            self.send_drawing_command()
-        elif parts[0] == 'remove':
-            self.widget.node.move(-100, -100)  # Move it out of view for "removal"
-            self.widget.update()
-            self.send_drawing_command()
+            self.widget.handle_mousedown(button, x, y)
+        elif command == 'mouseup':
+            x = int(parts[1])
+            y = int(parts[2])
+            self.widget.handle_mouseup(x, y)
+        elif command == 'mousemove':
+            x = int(parts[1])
+            y = int(parts[2])
+            self.widget.handle_mousemove(x, y)
+        self.send_drawing_command()

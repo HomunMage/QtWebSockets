@@ -23,6 +23,6 @@ class MainWindow(QMainWindow):
 
         self.canvas_widget = CanvasWidget()
         self.scene = QGraphicsScene()
-        self.graphics_view = CustomGraphicsView(self.scene, self)
+        self.graphics_view = CustomGraphicsView(self.scene, self.canvas_widget)
         self.layout.addWidget(self.graphics_view)
         self.setLayout(self.layout)

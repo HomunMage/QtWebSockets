@@ -2,15 +2,15 @@
 
 from PySide6.QtWidgets import QGraphicsView, QMenu
 from PySide6.QtGui import QAction
-from PySide6.QtCore import QPointF, Qt
+from PySide6.QtCore import Qt, QPointF
 
 class CustomGraphicsView(QGraphicsView):
-    def __init__(self, scene, main_window):
+    def __init__(self, scene, widget):
         super().__init__(scene)
         self.setDragMode(QGraphicsView.NoDrag)
         self._dragging = False
         self._last_mouse_pos = QPointF()
-        self.main_window = main_window  # Reference to the MainWindow
+        self.widget = widget
 
     def mousePressEvent(self, event):
         if event.button() == Qt.RightButton:
@@ -38,18 +38,9 @@ class CustomGraphicsView(QGraphicsView):
     def add_node(self, position):
         self.widget.node.move(position.x(), position.y())
         self.widget.update()  # Update the widget immediately
-        self.server.send_drawing_command()  # Send the updated drawing command immediately
+        self.widget.get_drawing_command()  # Send the updated drawing command immediately
 
     def remove_node(self):
         self.widget.node.move(-100, -100)  # Move it out of view for "removal"
         self.widget.update()  # Update the widget immediately
-        self.server.send_drawing_command()  # Send the updated drawing command immediately
-
-    def update_map_view(self):
-        rect = self.scene().sceneRect()
-        pixmap = QPixmap(int(rect.width()), int(rect.height()))
-        pixmap.fill(Qt.transparent)
-        painter = QPainter(pixmap)
-        self.scene().render(painter)
-        painter.end()
-        self.main_window.map_view.update_map(pixmap)  # Update the map view in the MainWindow
+        self.widget.get_drawing_command()  # Send the updated drawing command immediately
