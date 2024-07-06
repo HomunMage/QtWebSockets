@@ -4,7 +4,6 @@ from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QHBoxLayout, QLabel, QCo
 from PySide6.QtCore import Qt
 from CustomGraphicsView import CustomGraphicsView
 from CanvasWidget import CanvasWidget
-from MapView import MapView
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -27,17 +26,3 @@ class MainWindow(QMainWindow):
         self.graphics_view = CustomGraphicsView(self.scene, self)
         self.layout.addWidget(self.graphics_view)
         self.setLayout(self.layout)
-
-        self.create_dock_widgets()
-
-    def create_dock_widgets(self):
-        self.map_view = MapView()
-        self.dock_widget = QDockWidget("Map View", self)
-        self.dock_widget.setWidget(self.map_view)
-        self.dock_widget.setFloating(True)
-
-        # Move the dock widget to the bottom-left corner of the screen
-        screen_geometry = self.screen().geometry()
-        screen_height = screen_geometry.height()
-        self.dock_widget.move(0, screen_height - 200)
-        self.addDockWidget(Qt.BottomDockWidgetArea, self.dock_widget)
