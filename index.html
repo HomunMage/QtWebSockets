@@ -2,33 +2,75 @@
 <html>
 <head>
     <title>WebSocket Client</title>
+    <style>
+        canvas {
+            border: 1px solid black;
+        }
+    </style>
 </head>
 <body>
-    <h1>WebSocket Client</h1>
-    <input type="text" id="messageInput" placeholder="Enter message">
-    <button onclick="sendMessage()">Send</button>
-    <ul id="messages"></ul>
+    <h1>Qt Drawing</h1>
+    <canvas id="canvas" width="200" height="200"></canvas>
 
     <script>
-        var socket = new WebSocket('ws://localhost:89000');
+        var socket = new WebSocket('ws://localhost:8000');
+        var canvas = document.getElementById('canvas');
+        var ctx = canvas.getContext('2d');
+        var dragging = false;
+        var offsetX, offsetY;
+        var squareX = 50, squareY = 50, squareSize = 100;
 
         socket.onopen = function() {
             console.log('WebSocket connection opened');
         };
 
         socket.onmessage = function(event) {
-            var messages = document.getElementById('messages');
-            var message = document.createElement('li');
-            message.textContent = event.data;
-            messages.appendChild(message);
+            var command = event.data;
+            if (command.startsWith('draw')) {
+                var parts = command.split(' ');
+                squareX = parseInt(parts[2]);
+                squareY = parseInt(parts[3]);
+                drawOnCanvas(squareX, squareY, squareSize, squareSize, parts.slice(6).join(' '));
+            }
         };
 
-        function sendMessage() {
-            var input = document.getElementById('messageInput');
-            var message = input.value;
-            socket.send(message);
-            input.value = '';
+        function drawOnCanvas(x, y, width, height, text) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = 'black';
+            ctx.fillRect(x, y, width, height);
+            ctx.fillStyle = 'white';
+            ctx.fillText(text, x + 25, y + 60);
         }
+
+        canvas.onmousedown = function(e) {
+            var rect = canvas.getBoundingClientRect();
+            offsetX = e.clientX - rect.left;
+            offsetY = e.clientY - rect.top;
+
+            if (offsetX >= squareX && offsetX <= squareX + squareSize && offsetY >= squareY && offsetY <= squareY + squareSize) {
+                dragging = true;
+                offsetX -= squareX;
+                offsetY -= squareY;
+            }
+        };
+
+        canvas.onmousemove = function(e) {
+            if (dragging) {
+                var rect = canvas.getBoundingClientRect();
+                var x = e.clientX - rect.left - offsetX;
+                var y = e.clientY - rect.top - offsetY;
+                socket.send(`move ${x} ${y}`);
+            }
+        };
+
+        canvas.onmouseup = function() {
+            dragging = false;
+        };
+
+        canvas.onmouseleave = function() {
+            dragging = false;
+        };
     </script>
 </body>
 </html>

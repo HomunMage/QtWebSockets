@@ -1,28 +1,32 @@
 import sys
-from PySide6.QtCore import QObject, QCoreApplication, QTimer, QByteArray
+from http.server import SimpleHTTPRequestHandler, HTTPServer
+from PySide6.QtCore import QObject, QTimer, QThread, QPointF
+from PySide6.QtGui import QPainter, QColor
+from PySide6.QtWidgets import QApplication, QWidget, QHBoxLayout, QLabel, QComboBox, QVBoxLayout
 from PySide6.QtWebSockets import QWebSocketServer, QWebSocket
 from PySide6.QtNetwork import QHostAddress
-from PySide6.QtGui import QPainter, QColor
-from PySide6.QtWidgets import QApplication, QWidget
 
 class CanvasWidget(QWidget):
     def __init__(self):
         super().__init__()
         self.setGeometry(0, 0, 200, 200)
-    
+        self.square_pos = QPointF(50, 50)
+        self.square_size = (100, 100)
+        self.text = "Start"
+
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.setBrush(QColor(255, 255, 255))
         painter.drawRect(0, 0, self.width(), self.height())
 
         painter.setBrush(QColor(0, 0, 0))
-        painter.drawRect(50, 50, 100, 100)
-        
+        painter.drawRect(self.square_pos.x(), self.square_pos.y(), self.square_size[0], self.square_size[1])
+
         painter.setPen(QColor(255, 255, 255))
-        painter.drawText(75, 110, "Start")
+        painter.drawText(self.square_pos.x() + 25, self.square_pos.y() + 60, self.text)
 
     def get_drawing_command(self):
-        return "draw square 50 50 100 100 Start"
+        return f"draw square {self.square_pos.x()} {self.square_pos.y()} {self.square_size[0]} {self.square_size[1]} {self.text}"
 
 class WebSocketServer(QObject):
     def __init__(self, widget):
@@ -40,6 +44,7 @@ class WebSocketServer(QObject):
 
     def on_new_connection(self):
         client = self.server.nextPendingConnection()
+        client.textMessageReceived.connect(lambda msg: self.process_message(client, msg))
         client.disconnected.connect(lambda: self.on_client_disconnected(client))
         self.clients.append(client)
 
@@ -51,8 +56,46 @@ class WebSocketServer(QObject):
         for client in self.clients:
             client.sendTextMessage(command)
 
+    def process_message(self, client, message):
+        parts = message.split(' ')
+        if parts[0] == 'move':
+            x = int(parts[1])
+            y = int(parts[2])
+            self.widget.square_pos = QPointF(x, y)
+            self.widget.update()  # Update the widget immediately
+            self.send_drawing_command()  # Send the updated drawing command immediately
+
+class MainWindow(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setGeometry(100, 100, 300, 300)
+
+        self.layout = QVBoxLayout()
+
+        self.type_layout = QHBoxLayout()
+        self.type_label = QLabel("Node:")
+        self.type_combo = QComboBox()
+        self.type_combo.addItem("Square")
+        self.type_layout.addWidget(self.type_label)
+        self.type_layout.addWidget(self.type_combo)
+
+        self.layout.addLayout(self.type_layout)
+
+        self.canvas = CanvasWidget()
+        self.layout.addWidget(self.canvas)
+
+        self.setLayout(self.layout)
+
+class HTTPServerThread(QThread):
+    def run(self):
+        handler = SimpleHTTPRequestHandler
+        httpd = HTTPServer(('localhost', 8000), handler)
+        httpd.serve_forever()
+
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    widget = CanvasWidget()
-    server = WebSocketServer(widget)
+    main_window = MainWindow()
+    main_window.hide()  # Hide the main window
+    server = WebSocketServer(main_window.canvas)
+
     sys.exit(app.exec())
