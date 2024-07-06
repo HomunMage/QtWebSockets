@@ -1,19 +1,18 @@
 # CustomGraphicsView.py
 
-from PySide6.QtWidgets import QWidget, QGraphicsView
-from PySide6.QtCore import QObject, QPointF, QTimer
-from PySide6.QtGui import QPainter, QColor
+from PySide6.QtWidgets import QWidget, QGraphicsView, QMenu
+from PySide6.QtCore import QObject, QTimer, QPointF
+from PySide6.QtGui import QPainter, QColor, QAction
 from PySide6.QtWebSockets import QWebSocketServer, QWebSocket
 from PySide6.QtNetwork import QHostAddress
 import sys
+from Node import Node
 
 class CanvasWidget(QWidget):
     def __init__(self):
         super().__init__()
         self.setGeometry(0, 0, 200, 200)
-        self.square_pos = QPointF(50, 50)
-        self.square_size = (100, 100)
-        self.text = "Start"
+        self.node = Node(50, 50, (100, 100), "Start")
 
     def paintEvent(self, event):
         painter = QPainter(self)
@@ -21,13 +20,13 @@ class CanvasWidget(QWidget):
         painter.drawRect(0, 0, self.width(), self.height())
 
         painter.setBrush(QColor(0, 0, 0))
-        painter.drawRect(self.square_pos.x(), self.square_pos.y(), self.square_size[0], self.square_size[1])
+        painter.drawRect(self.node.pos.x(), self.node.pos.y(), self.node.size[0], self.node.size[1])
 
         painter.setPen(QColor(255, 255, 255))
-        painter.drawText(self.square_pos.x() + 25, self.square_pos.y() + 60, self.text)
+        painter.drawText(self.node.pos.x() + 25, self.node.pos.y() + 60, self.node.text)
 
     def get_drawing_command(self):
-        return f"draw square {self.square_pos.x()} {self.square_pos.y()} {self.square_size[0]} {self.square_size[1]} {self.text}"
+        return self.node.get_drawing_command()
 
 class WebSocketServer(QObject):
     def __init__(self, widget):
@@ -62,17 +61,17 @@ class WebSocketServer(QObject):
         if parts[0] == 'move':
             x = int(parts[1])
             y = int(parts[2])
-            self.widget.square_pos = QPointF(x, y)
+            self.widget.node.move(x, y)
             self.widget.update()  # Update the widget immediately
             self.send_drawing_command()  # Send the updated drawing command immediately
         elif parts[0] == 'add':
             x = int(parts[2])
             y = int(parts[3])
-            self.widget.square_pos = QPointF(x, y)
+            self.widget.node.move(x, y)
             self.widget.update()
             self.send_drawing_command()
         elif parts[0] == 'remove':
-            self.widget.square_pos = QPointF(-100, -100)  # Move it out of view for "removal"
+            self.widget.node.move(-100, -100)  # Move it out of view for "removal"
             self.widget.update()
             self.send_drawing_command()
 
@@ -108,12 +107,12 @@ class CustomGraphicsView(QGraphicsView):
         context_menu.exec(self.mapToGlobal(position))
 
     def add_node(self, position):
-        self.widget.square_pos = position
+        self.widget.node.move(position.x(), position.y())
         self.widget.update()  # Update the widget immediately
         self.server.send_drawing_command()  # Send the updated drawing command immediately
 
     def remove_node(self):
-        self.widget.square_pos = QPointF(-100, -100)  # Move it out of view for "removal"
+        self.widget.node.move(-100, -100)  # Move it out of view for "removal"
         self.widget.update()  # Update the widget immediately
         self.server.send_drawing_command()  # Send the updated drawing command immediately
 
