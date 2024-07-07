@@ -9,35 +9,45 @@ class CanvasWidget(QWidget):
     def __init__(self):
         super().__init__()
         self.setGeometry(0, 0, 200, 200)
-        self.node = Node(50, 50, (100, 100), "Start")
+        self.nodes = [
+            Node(50, 50, (100, 100), "Start"),
+            Node(100, 150, (100, 100), "End")
+        ]
 
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.setBrush(QColor(255, 255, 255))
         painter.drawRect(0, 0, self.width(), self.height())
 
-        painter.setBrush(QColor(0, 0, 0))
-        painter.drawRect(self.node.pos.x(), self.node.pos.y(), self.node.size[0], self.node.size[1])
+        for node in self.nodes:
+            painter.setBrush(QColor(0, 0, 0))
+            painter.drawRect(node.pos.x(), node.pos.y(), node.size[0], node.size[1])
 
-        painter.setPen(QColor(255, 255, 255))
-        painter.drawText(self.node.pos.x() + 25, self.node.pos.y() + 60, self.node.text)
+            painter.setPen(QColor(255, 255, 255))
+            painter.drawText(node.pos.x() + 25, node.pos.y() + 60, node.text)
 
     def get_drawing_command(self):
-        return f'draw {self.node.pos.x()} {self.node.pos.y()} {self.node.size[0]} {self.node.text}'
+        commands = []
+        for node in self.nodes:
+            commands.append(f'draw {node.pos.x()} {node.pos.y()} {node.size[0]} {node.size[1]} {node.text}')
+        return ' | '.join(commands)
 
     def handle_mousedown(self, button, x, y):
         if button == 'left':
-            if self.node.contains(x, y):
-                self.node.dragging = True
-                self.node.drag_offset = QPoint(x - self.node.pos.x(), y - self.node.pos.y())
+            for node in self.nodes:
+                if node.contains(x, y):
+                    node.dragging = True
+                    node.drag_offset = QPoint(x - node.pos.x(), y - node.pos.y())
+                    break
         elif button == 'right':
-            # Handle right-click if necessary
             pass
 
     def handle_mouseup(self, x, y):
-        self.node.dragging = False
+        for node in self.nodes:
+            node.dragging = False
 
     def handle_mousemove(self, x, y):
-        if self.node.dragging:
-            self.node.move(x - self.node.drag_offset.x(), y - self.node.drag_offset.y())
-            self.update()  # Update the widget immediately
+        for node in self.nodes:
+            if node.dragging:
+                node.move(x - node.drag_offset.x(), y - node.drag_offset.y())
+                self.update()  # Update the widget immediately

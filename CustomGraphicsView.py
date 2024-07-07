@@ -3,6 +3,7 @@
 from PySide6.QtWidgets import QGraphicsView, QMenu
 from PySide6.QtGui import QAction
 from PySide6.QtCore import Qt, QPointF
+from Node import Node
 
 class CustomGraphicsView(QGraphicsView):
     def __init__(self, scene, widget):
@@ -24,23 +25,25 @@ class CustomGraphicsView(QGraphicsView):
         context_menu = QMenu(self)
         scene_position = self.mapToScene(position)
 
+        add_action = QAction("Add Node", self)
+        add_action.triggered.connect(lambda: self.add_node(scene_position))
+        context_menu.addAction(add_action)
+
         if item:  # If clicked on an item (node)
             remove_action = QAction("Remove Node", self)
             remove_action.triggered.connect(self.remove_node)
             context_menu.addAction(remove_action)
-        else:  # If clicked on the canvas
-            add_action = QAction("Add Node", self)
-            add_action.triggered.connect(lambda: self.add_node(scene_position))
-            context_menu.addAction(add_action)
 
         context_menu.exec(self.mapToGlobal(position))
 
     def add_node(self, position):
-        self.widget.node.move(position.x(), position.y())
+        new_node = Node(position.x(), position.y(), (100, 100), "New Node")
+        self.widget.nodes.append(new_node)
         self.widget.update()  # Update the widget immediately
         self.widget.get_drawing_command()  # Send the updated drawing command immediately
 
     def remove_node(self):
-        self.widget.node.move(-100, -100)  # Move it out of view for "removal"
+        if self.widget.nodes:
+            self.widget.nodes.pop()  # Remove the last node for simplicity
         self.widget.update()  # Update the widget immediately
         self.widget.get_drawing_command()  # Send the updated drawing command immediately

@@ -1,6 +1,6 @@
 # MainWindow.py
 
-from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QHBoxLayout, QLabel, QComboBox, QDockWidget, QGraphicsScene
+from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QHBoxLayout, QLabel, QComboBox, QGraphicsScene, QWidget
 from PySide6.QtCore import Qt
 from CustomGraphicsView import CustomGraphicsView
 from CanvasWidget import CanvasWidget
@@ -8,9 +8,11 @@ from CanvasWidget import CanvasWidget
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setGeometry(100, 100, 300, 300)
+        self.setGeometry(100, 100, 600, 400)
 
-        self.layout = QVBoxLayout()
+        central_widget = QWidget()
+        self.setCentralWidget(central_widget)
+        self.layout = QVBoxLayout(central_widget)
 
         self.type_layout = QHBoxLayout()
         self.type_label = QLabel("Node:")
@@ -25,4 +27,5 @@ class MainWindow(QMainWindow):
         self.scene = QGraphicsScene()
         self.graphics_view = CustomGraphicsView(self.scene, self.canvas_widget)
         self.layout.addWidget(self.graphics_view)
-        self.setLayout(self.layout)
+
+
